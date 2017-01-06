@@ -11,6 +11,12 @@ from .lib.event_emitter import EventEmitter
 from .lib.user_queue import UserQueue
 
 
+def entry_author(entry):
+    try:
+        return entry.meta['author'].id
+    except:
+        return None
+
 class Playlist(EventEmitter):
     """
         A playlist is manages the list of songs that will be played.
@@ -21,7 +27,7 @@ class Playlist(EventEmitter):
         self.bot = bot
         self.loop = bot.loop
         self.downloader = bot.downloader
-        self.entries = UserQueue(lambda entry : entry.meta.get('author', None))
+        self.entries = UserQueue(entry_author)
 
     def __iter__(self):
         return iter(self.entries)
