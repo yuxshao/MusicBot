@@ -14,29 +14,28 @@ class UserQueue:
         self.data = OrderedDict()
 
     def __iter__(self):
-        for v in self.data.values():
-            for s in v:
-                yield s
+        it = [iter(v) for v in self.data.values()]
+        remaining = True
+        while remaining:
+            remaining = False
+            for i in it:
+                try:
+                    yield next(i)
+                    remaining = True
+                except StopIteration:
+                    pass
 
     def __len__(self):
         return sum([len(v) for v in self.data.values()])
 
     def __getitem__(self, key):
-        key = int(key)
-        for v in self.data.values():
-            if key < len(v):
-                return v[key]
-            key -= len(v)
-        raise IndexError("list index out of range")
-
-    def __delitem__(self, key):
-        key = int(key)
-        for v in self.data.values():
-            if key < len(v):
-                del v[key]
-                return
-            key -= len(v)
-        raise IndexError("list index out of range")
+        it = iter(self)
+        try:
+            for _ in range(int(key)):
+                next(it)
+            return next(it)
+        except StopIteration:
+            raise IndexError("list index out of range")
 
     def append(self, entry):
         user = self.user(entry)
@@ -45,9 +44,14 @@ class UserQueue:
         self.data[user].append(entry)
 
     def popleft(self):
-        i = self[0]
-        del self[0]
-        return i
+        if not self:
+            raise IndexError("queue empty")
+        while True:
+            k, v = self.data.popitem(last=False)
+            self.data[k] = v
+            if v:
+                i = v.popleft()
+                return i
 
     def clear(self):
         self.data.clear()
