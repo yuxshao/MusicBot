@@ -8,6 +8,7 @@ from .utils import get_header
 from .entry import URLPlaylistEntry
 from .exceptions import ExtractionError, WrongEntryTypeError
 from .lib.event_emitter import EventEmitter
+from .lib.user_queue import UserQueue
 
 
 class Playlist(EventEmitter):
@@ -20,7 +21,7 @@ class Playlist(EventEmitter):
         self.bot = bot
         self.loop = bot.loop
         self.downloader = bot.downloader
-        self.entries = deque()
+        self.entries = UserQueue(lambda entry : entry.meta.get('author', None))
 
     def __iter__(self):
         return iter(self.entries)
